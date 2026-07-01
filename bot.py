@@ -153,12 +153,37 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if user_id not in context.bot_data["join_dates"]:
         context.bot_data["join_dates"][user_id] = datetime.now().strftime("%d-%m-%Y")
 
+    # Send refund policy first
+    refund_msg = (
+        "📋 *Refund Policy*\n\n"
+        "IF YOU FAIL TO FOLLOW OUR CLEAR INSTRUCTED RULES YOU WILL NOT BE REFUNDED.\n\n"
+        "*How to Apply for a Refund:*\n\n"
+        "1. Check card on pay.google.com\n\n"
+        "2. If the card is dead, click refund at the bottom of purchased card.\n\n"
+        "3. Send the bot a Screenshot/Photo that proves the card is dead.\n\n"
+        "4. When checking card on pay.google.com, you have an automatic 3 minute timer.\n\n"
+        "5. Failing to check card / provide proof of card being dead past the 3 minute timer can result in no refund.\n\n"
+        "6. When providing a photo or a screenshot, please make sure: Card Number, Expiry Date and CCV are fully visible.\n\n"
+        "7. If number doesn't call or is invalid this doesn't qualify for refund / unless all missing or fake info.\n\n"
+        "8. If all the details are valid and the card is dead your account will be credited again with a refund within 5 minutes\n\n"
+        "*Keep in Mind:*\n\n"
+        "(£10 & £5 BASES ARE NOT REFUNDABLE)\n\n"
+        "(HSBC CARDS ARE NOT REFUNDABLE\n"
+        "Or ANY company under them such as John lewis, M&S, First direct, etc)\n\n"
+        "⛔️ NOTE ⛔️\n\n"
+        "🔹 Support account is available 24/7 @EXCELV33\n\n"
+        "🔹 1 Transaction per wallet unless payment is underpaid. Our wallet always changes after each completed deposit.\n\n"
+        "🔹 Payment BTC ONLY\n\n"
+        "🔹 BY PURCHASING YOU AGREE TO THESE RULES. FAILURE TO READ THEM WILL FORFEIT YOUR REFUND / REPLACEMENT. WE SHALL GIVE NO WARNINGS"
+    )
+    await update.message.reply_text(refund_msg, parse_mode="Markdown")
+
+    # Then send welcome with menu
     balance   = get_balance(context, user_id)
     join_date = context.bot_data["join_dates"].get(user_id, datetime.now().strftime("%d-%m-%Y"))
-
     welcome = (
         f"Welcome to EXCEL Store 👋\n"
-        f"Use the menu below to interact with the bot 🤖\n"
+        f"Use the menu below to interact with the bot 🤖\n\n"
         f"===============\n"
         f"Managed by {ADMIN_USERNAME}\n\n"
         f"🔹 Support account is available 24/7 {SUPPORT_USER}\n\n"
