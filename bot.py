@@ -195,9 +195,8 @@ async def console_log(context, user, action, detail=""):
         msg = f"{username} ({user.id}) {action}"
         if detail:
             msg += f" — {detail}"
-        await context.bot.send_message(chat_id=CONSOLE_CHAT, text=msg)
+        await context.bot.send_message(CONSOLE_CHAT, msg)
     except Exception as e:
-        print(f"CONSOLE_LOG_ERROR: {e}")
         logger.error(f"Console log error: {e}")
 
 def is_admin(update):
