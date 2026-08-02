@@ -10,8 +10,8 @@ logger = logging.getLogger(__name__)
 
 TOKEN          = os.environ.get("BOT_TOKEN")
 ADMIN_USERNAME = "@EXCELV33"
-ADMIN_CHAT_ID  = os.environ.get("ADMIN_CHAT_ID", "")
-CONSOLE_CHAT   = os.environ.get("CONSOLE_CHAT_ID", "")
+ADMIN_CHAT_ID  = "6004004907"
+CONSOLE_CHAT   = "-1004417384895"
 BTC_ADDRESS    = os.environ.get("BTC_ADDRESS", "YOUR_BTC_ADDRESS")
 CHANNEL_LINK   = "https://t.me/EXCELupdate"
 SUPPORT_USER   = "@EXCELV33"
@@ -152,7 +152,6 @@ DATABASES = {
     },
 }
 
-# BIN index for search
 ALL_BINS = {}
 for dk, dd in DATABASES.items():
     for i, card in enumerate(dd["cards"]):
@@ -186,7 +185,6 @@ RULES_TEXT = (
 )
 
 def build_bin_summary(cards):
-    """Build BIN summary like '411298 x1', '416549 x3' etc"""
     counter = Counter(card.split("-")[0] for card in cards)
     lines = [f"{bin_num} x{count}" for bin_num, count in sorted(counter.items())]
     return "\n".join(lines)
@@ -202,7 +200,9 @@ async def console_log(context, user, action, detail=""):
         logger.error(f"Console log error: {e}")
 
 def is_admin(update):
-    return str(update.effective_user.id) == str(ADMIN_CHAT_ID) or str(update.effective_chat.id) == str(CONSOLE_CHAT)
+    user_id = str(update.effective_user.id)
+    chat_id = str(update.effective_chat.id)
+    return user_id == ADMIN_CHAT_ID or chat_id == CONSOLE_CHAT
 
 def get_balance(context, user_id):
     return context.bot_data.get("balances", {}).get(user_id, 0)
@@ -296,7 +296,6 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             reply_markup=InlineKeyboardMarkup(buttons)
         )
 
-    # sb = show BIN summary for a database
     elif data.startswith("sb|"):
         dk          = data.split("|")[1]
         dd          = DATABASES.get(dk)
@@ -319,13 +318,11 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             )
             return
 
-        # Build card buttons
         buttons = []
         for i, card in enumerate(page_cards):
             display = card.replace("-", " - ")
             buttons.append([InlineKeyboardButton(display, callback_data=f"bc|{dk}|{i}")])
 
-        # Nav buttons
         nav = [InlineKeyboardButton("🔄 Refresh", callback_data=f"sb|{dk}")]
         if total_pages > 1:
             nav.append(InlineKeyboardButton("Next ➡️", callback_data=f"pg|{dk}|1"))
@@ -343,7 +340,6 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             reply_markup=InlineKeyboardMarkup(buttons)
         )
 
-    # pg = show paginated card buttons
     elif data.startswith("pg|"):
         _, dk, pg   = data.split("|")
         page        = int(pg)
