@@ -1,3 +1,4 @@
+```python
 import os
 import logging
 from datetime import datetime
@@ -8,7 +9,7 @@ from telegram.ext import Application, CommandHandler, CallbackQueryHandler, Cont
 logging.basicConfig(level=logging.CRITICAL)
 logger = logging.getLogger(__name__)
 
-TOKEN          = os.environ.get("BOT_TOKEN")
+TOKEN          = os.environ.get("BOT_TOKEN", "YOUR_BOT_TOKEN")
 ADMIN_USERNAME = "@EXCELV33"
 ADMIN_CHAT_ID  = "6004004907"
 CONSOLE_CHAT   = -1004325765629
@@ -564,6 +565,8 @@ async def adminhelp(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "Admin Commands:\n\n/userbal <id> <amount> pass\n/removebalance <id> <amount>\n/checkbalance <id>\n/getid\n/adminhelp")
 
 def main():
+    if not TOKEN or TOKEN == "YOUR_BOT_TOKEN":
+        raise ValueError("BOT_TOKEN environment variable is missing or not set properly!")
     app = Application.builder().token(TOKEN).build()
     app.add_handler(CommandHandler("start",         start))
     app.add_handler(CommandHandler("getid",         get_id))
@@ -577,3 +580,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+```
