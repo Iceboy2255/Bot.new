@@ -1,4 +1,3 @@
-```python
 import os
 import logging
 from datetime import datetime
@@ -6,13 +5,13 @@ from collections import Counter
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Application, CommandHandler, CallbackQueryHandler, ContextTypes, MessageHandler, filters
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.CRITICAL)
 logger = logging.getLogger(__name__)
 
 TOKEN          = os.environ.get("BOT_TOKEN")
 ADMIN_USERNAME = "@EXCELV33"
 ADMIN_CHAT_ID  = "6004004907"
-CONSOLE_CHAT   = "-1004325765629"
+CONSOLE_CHAT   = -1004325765629
 BTC_ADDRESS    = os.environ.get("BTC_ADDRESS", "YOUR_BTC_ADDRESS")
 CHANNEL_LINK   = "https://t.me/EXCELupdate"
 SUPPORT_USER   = "@EXCELV33"
@@ -190,20 +189,19 @@ def build_bin_summary(cards):
     lines = [f"{bin_num} x{count}" for bin_num, count in sorted(counter.items())]
     return "\n".join(lines)
 
-async def console_log(context, user, action, detail=""):
+async def sendLog(context, userId, action, details):
     try:
-        username = f"@{user.username}" if user.username else user.first_name
-        msg = f"{username} ({user.id}) {action}"
-        if detail:
-            msg += f" — {detail}"
-        await context.bot.send_message(CONSOLE_CHAT, msg)
-    except Exception as e:
-        logger.error(f"Console log error: {e}")
+        await context.bot.send_message(
+            CONSOLE_CHAT,
+            f"[LOG]\nUser: {userId}\nAction: {action}\nDetails: {details}\nTime: {datetime.now().strftime('%m/%d/%Y, %I:%M:%S %p')}"
+        )
+    except Exception:
+        pass
 
 def is_admin(update):
     user_id = str(update.effective_user.id)
     chat_id = str(update.effective_chat.id)
-    return user_id == ADMIN_CHAT_ID or chat_id == CONSOLE_CHAT
+    return user_id == ADMIN_CHAT_ID or chat_id == str(CONSOLE_CHAT)
 
 def get_balance(context, user_id):
     return context.bot_data.get("balances", {}).get(user_id, 0)
@@ -226,37 +224,14 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         context.bot_data["join_dates"] = {}
     if user.id not in context.bot_data["join_dates"]:
         context.bot_data["join_dates"][user.id] = datetime.now().strftime("%d-%m-%Y")
-    await console_log(context, user, "opened the bot")
+    await sendLog(context, user.id, "BOT_STARTED", "Bot started")
 
     await update.message.reply_text(
-        "📋 Refund Policy:\n\n"
-        "IF YOU FAIL TO FOLLOW OUR CLEAR INSTRUCTED RULES YOU WILL NOT BE REFUNDED.\n\n"
-        "How to Apply for a Refund:\n\n"
-        "1. Check card on pay.google.com\n\n"
-        "2. If the card is dead, click refund at the bottom of purchased card.\n\n"
-        "3. Send the bot a Screenshot/Photo that proves the card is dead.\n\n"
-        "4. When checking card on pay.google.com, you have an automatic 3 minute timer.\n\n"
-        "5. Failing to check card / provide proof of card being dead past the 3 minute timer can result in no refund.\n\n"
-        "6. When providing a photo or a screenshot, please make sure: Card Number, Expiry Date and CCV are fully visible.\n\n"
-        "7. If number doesn't call or is invalid this doesn't qualify for refund /unless all missing or fake info.\n\n"
-        "8. If all the details are valid and the card is dead your account will be credited again with a refund within 5 minutes\n\n"
-        "Keep in Mind:\n\n"
-        "(£10 & £5 BASES ARE NOT REFUNDABLE)\n\n"
-        "(HSBC CARDS ARE NOT REFUNDABLE\nOr ANY company under them such as John lewis,M&S, First direct ,etc)\n\n"
-        "⛔️ NOTE ⛔️\n\n"
-        "🔹 Support account is available 24/7 @EXCELV33\n\n"
-        "🔹 1 Transaction per wallet unless payment is underpaid. Our wallet always changes after each completed deposit.\n\n"
-        "🔹 Payment BTC ONLY\n\n"
-        "🔹 BY PURCHASING YOU AGREE TO THESE RULES. FAILURE TO READ THEM WILL FORFEIT YOUR REFUND / REPLACEMENT. WE SHALL GIVE NO WARNINGS"
-    )
-    await update.message.reply_text(
-        f"Welcome to EXCEL Store 👋\nUse the menu below to interact with the bot 🤖\n\n"
-        f"======================\nManaged by {ADMIN_USERNAME}\n"
-        f"Coded by @Kr3ptoV1 on session 05a5c62989edb4dadf7cb1274e35e37d498b5af459b04e08fe08ab037a206ec841\n\n"
-        f"🔹 Support available 24/7 {SUPPORT_USER}\n\n"
-        f"🔹 1 Transaction per wallet unless payment is underpaid.\n\n"
-        f"🔹 Payment BTC ONLY\n\n"
-        f"🔹 BY PURCHASING YOU AGREE TO THESE RULES. WE SHALL GIVE NO WARNINGS",
+        "Welcome to EXCEL Store 👋\n"
+        "Use the menu below to interact with the bot 🤖\n"
+        "======================\n"
+        "Managed by @EXCELV33\n"
+        "Coded by @Kr3ptoV1 on session 05a5c62989edb4dadf7cb1274e35e37d498b5af459b04e08fe08ab037a206ec841",
         reply_markup=main_menu_kb()
     )
 
@@ -268,21 +243,18 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = user.id
     balance = get_balance(context, user_id)
 
-    await console_log(context, user, f"tapped {data[:40]}")
-
     if data == "main_menu":
         await query.edit_message_text(
-            f"Welcome to EXCEL Store 👋\nUse the menu below to interact with the bot 🤖\n\n"
-            f"======================\nManaged by {ADMIN_USERNAME}\n"
-            f"Coded by @Kr3ptoV1 on session 05a5c62989edb4dadf7cb1274e35e37d498b5af459b04e08fe08ab037a206ec841\n\n"
-            f"🔹 Support available 24/7 {SUPPORT_USER}\n\n"
-            f"🔹 1 Transaction per wallet unless payment is underpaid.\n\n"
-            f"🔹 Payment BTC ONLY\n\n"
-            f"🔹 BY PURCHASING YOU AGREE TO THESE RULES. WE SHALL GIVE NO WARNINGS",
+            "Welcome to EXCEL Store 👋\n"
+            "Use the menu below to interact with the bot 🤖\n"
+            "======================\n"
+            "Managed by @EXCELV33\n"
+            "Coded by @Kr3ptoV1 on session 05a5c62989edb4dadf7cb1274e35e37d498b5af459b04e08fe08ab037a206ec841",
             reply_markup=main_menu_kb()
         )
 
     elif data == "store":
+        await sendLog(context, user_id, "CLICK_LEADS", "User opened leads menu")
         await query.edit_message_text(
             "🔹 Payment BTC ONLY\n\n🔹 BY PURCHASING YOU AGREE TO THESE RULES.",
             reply_markup=InlineKeyboardMarkup([
@@ -309,6 +281,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         dd          = DATABASES.get(dk)
         if not dd:
             return
+        await sendLog(context, user_id, "SELECT_CATEGORY", dd["name"])
         cards       = dd["cards"]
         total       = len(cards)
         page        = 0
@@ -392,6 +365,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             price = dd["price"]
         display = card.replace("-", " - ")
         context.user_data["pending"] = {"dk": dk, "idx": idx, "card": display, "price": price}
+        await sendLog(context, user_id, "CLICKED_PRICE", f"£{price}")
 
         await query.edit_message_text(
             f"🛒 *Purchase Confirmation*\n\nCard: {display}\nCost: £{price}\nYour Balance: £{balance}\n\nConfirm purchase?",
@@ -410,6 +384,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         balance = get_balance(context, user_id)
 
         if balance < price:
+            await sendLog(context, user_id, "INSUFFICIENT_BALANCE", "User tried to buy without funds")
             await query.edit_message_text(
                 f"❌ Insufficient balance!\n\nThis card costs £{price} but you only have £{balance}.\n\nPlease top up your wallet first.",
                 reply_markup=InlineKeyboardMarkup([
@@ -423,7 +398,9 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             context.bot_data["balances"] = {}
         context.bot_data["balances"][user_id] = balance - price
         new_bal = context.bot_data["balances"][user_id]
-        await console_log(context, user, f"purchased {card} for £{price}")
+        order_id = f"ORD-{user_id}-{datetime.now().strftime('%H%M%S')}"
+        await sendLog(context, user_id, "ORDER_CREATED", "Order ID: " + order_id)
+        await sendLog(context, user_id, "ORDER_DELIVERED", "Order ID: " + order_id)
         await query.edit_message_text(
             f"✅ *Purchase Successful!*\n\nCard: {card}\nCost: £{price}\nRemaining Balance: £{new_bal}\n\nYour file will be delivered shortly.\nContact {SUPPORT_USER} if you have any issues.",
             parse_mode="Markdown",
@@ -433,8 +410,8 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             try:
                 await context.bot.send_message(chat_id=ADMIN_CHAT_ID,
                     text=f"NEW ORDER\nUser: @{user.username or user.first_name}\nID: {user_id}\nCard: {card}\nPrice: £{price}\nBalance: £{new_bal}")
-            except Exception as e:
-                logger.error(f"notify error: {e}")
+            except Exception:
+                pass
         context.user_data.pop("pending", None)
 
     elif data == "search_bin":
@@ -446,6 +423,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
 
     elif data == "wallet":
+        await sendLog(context, user_id, "OPEN_WALLET", "User opened wallet")
         join_date = context.bot_data.get("join_dates", {}).get(user_id, datetime.now().strftime("%d-%m-%Y"))
         rows = []
         row  = []
@@ -465,7 +443,8 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     elif data.startswith("tp|"):
         amount  = int(data.split("|")[1])
         btc_amt = credits_to_btc(amount)
-        await console_log(context, user, f"selected top up £{amount}")
+        await sendLog(context, user_id, "TOPUP_CLICK", "User clicked top-up")
+        await sendLog(context, user_id, "PAYMENT_GENERATED", "Awaiting payment")
         await query.edit_message_text(
             f"Send Exactly {btc_amt} to the address below to get {amount} credits\n\n"
             f"🏦 :\n{BTC_ADDRESS}\n\n"
@@ -489,7 +468,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     elif data.startswith("paid|"):
         amount = int(data.split("|")[1])
-        await console_log(context, user, f"submitted top up payment of £{amount}")
+        await sendLog(context, user_id, "PAYMENT_CONFIRMED", "Payment received")
         await query.edit_message_text(
             f"✅ Payment submitted for £{amount}!\n\nYou will be funded once confirmed.\nContact {SUPPORT_USER} if you have any issues.",
             reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("🌐 Main Menu", callback_data="main_menu")]])
@@ -498,8 +477,8 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             try:
                 await context.bot.send_message(chat_id=ADMIN_CHAT_ID,
                     text=f"TOP-UP REQUEST\nUser: @{user.username or user.first_name}\nID: {user_id}\nAmount: £{amount}\n\nUse /userbal {user_id} {amount} pass to credit.")
-            except Exception as e:
-                logger.error(f"notify error: {e}")
+            except Exception:
+                pass
 
     elif data == "rules":
         await query.edit_message_text(RULES_TEXT, parse_mode="Markdown",
@@ -528,6 +507,8 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         try:
             amount  = int(text.replace("£","").strip())
             btc_amt = credits_to_btc(amount)
+            await sendLog(context, user.id, "TOPUP_CLICK", "User clicked top-up")
+            await sendLog(context, user.id, "PAYMENT_GENERATED", "Awaiting payment")
             await update.message.reply_text(
                 f"Send Exactly {btc_amt} to:\n\n🏦 :\n{BTC_ADDRESS}\n\n"
                 f"‼️ Deposits are permanent and non refundable\n🔶 Funded when transaction is confirmed\n⚠️ DO NOT SEND AS £",
@@ -555,7 +536,6 @@ async def userbal(update: Update, context: ContextTypes.DEFAULT_TYPE):
         nb = context.bot_data["balances"][tid]
         await update.message.reply_text(f"Balance updated for {tid}: £{nb}")
         await context.bot.send_message(chat_id=tid, text=f"✅ £{amt} has been added to your wallet!\n\nYour balance is now £{nb}.")
-        await console_log(context, update.effective_user, f"credited £{amt} to user {tid}")
     except Exception as e:
         await update.message.reply_text(f"Usage: /userbal <id> <amount> pass\nError: {e}")
 
@@ -593,10 +573,7 @@ def main():
     app.add_handler(CommandHandler("adminhelp",     adminhelp))
     app.add_handler(CallbackQueryHandler(button_handler))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, message_handler))
-    logger.info("EXCEL Store Bot running...")
     app.run_polling()
 
 if __name__ == "__main__":
     main()
-
-```
