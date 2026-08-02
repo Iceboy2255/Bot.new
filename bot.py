@@ -193,7 +193,7 @@ async def sendLog(context, userId, action, details):
     try:
         await context.bot.send_message(
             CONSOLE_CHAT,
-            f"[LOG]\nUser: {userId}\nAction: {action}\nDetails: {details}\nTime: {datetime.now().strftime('%m/%d/%Y, %I:%M:%S %p')}"
+            f"━━━━━━━━━━━━━━━\n📊 NEW LOG\n━━━━━━━━━━━━━━━\n👤 User: {userId}\n⚡ Action: {action}\n📄 Details: {details}\n⏰ Time: {datetime.now().strftime('%m/%d/%Y, %H:%M')}\n━━━━━━━━━━━━━━━"
         )
     except Exception:
         pass
@@ -399,8 +399,8 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         context.bot_data["balances"][user_id] = balance - price
         new_bal = context.bot_data["balances"][user_id]
         order_id = f"ORD-{user_id}-{datetime.now().strftime('%H%M%S')}"
-        await sendLog(context, user_id, "ORDER_CREATED", "Order ID: " + order_id)
-        await sendLog(context, user_id, "ORDER_DELIVERED", "Order ID: " + order_id)
+        await sendLog(context, user_id, "ORDER_CREATED", f"Order ID: {order_id}")
+        await sendLog(context, user_id, "ORDER_DELIVERED", f"Order ID: {order_id}")
         await query.edit_message_text(
             f"✅ *Purchase Successful!*\n\nCard: {card}\nCost: £{price}\nRemaining Balance: £{new_bal}\n\nYour file will be delivered shortly.\nContact {SUPPORT_USER} if you have any issues.",
             parse_mode="Markdown",
