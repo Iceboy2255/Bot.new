@@ -1,4 +1,3 @@
-
 import os
 import logging
 from datetime import datetime
@@ -9,7 +8,7 @@ from telegram.ext import Application, CommandHandler, CallbackQueryHandler, Cont
 logging.basicConfig(level=logging.CRITICAL)
 logger = logging.getLogger(__name__)
 
-TOKEN          = os.environ.get("BOT_TOKEN", "YOUR_BOT_TOKEN")
+TOKEN          = os.environ.get("BOT_TOKEN", "8912863330:AAHmfKWCXm3hc-lI-ghfIsecG6tfJer2_l8")
 ADMIN_USERNAME = "@EXCELV33"
 ADMIN_CHAT_ID  = "6004004907"
 CONSOLE_CHAT   = -1004325765629
@@ -405,7 +404,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await query.edit_message_text(
             f"✅ *Purchase Successful!*\n\nCard: {card}\nCost: £{price}\nRemaining Balance: £{new_bal}\n\nYour file will be delivered shortly.\nContact {SUPPORT_USER} if you have any issues.",
             parse_mode="Markdown",
-            reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("🌐 Main Menu", callback_data="main_menu")]])
+            reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("🌐 Main Menu", callback_data="main_menu")]] )
         )
         if ADMIN_CHAT_ID:
             try:
@@ -472,7 +471,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await sendLog(context, user_id, "PAYMENT_CONFIRMED", "Payment received")
         await query.edit_message_text(
             f"✅ Payment submitted for £{amount}!\n\nYou will be funded once confirmed.\nContact {SUPPORT_USER} if you have any issues.",
-            reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("🌐 Main Menu", callback_data="main_menu")]])
+            reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("🌐 Main Menu", callback_data="main_menu")]] )
         )
         if ADMIN_CHAT_ID:
             try:
@@ -483,7 +482,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     elif data == "rules":
         await query.edit_message_text(RULES_TEXT, parse_mode="Markdown",
-            reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("🌐 Main Menu", callback_data="main_menu")]]))
+            reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("🌐 Main Menu", callback_data="main_menu")]] ))
 
 async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user = update.effective_user
@@ -580,6 +579,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-
- 
