@@ -1,3 +1,4 @@
+```python
 import os
 import logging
 from datetime import datetime
@@ -250,7 +251,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     )
     await update.message.reply_text(
         f"Welcome to EXCEL Store 👋\nUse the menu below to interact with the bot 🤖\n\n"
-        f"===============\nManaged by {ADMIN_USERNAME}\n\n"
+        f"======================\nManaged by {ADMIN_USERNAME}\n\n"
         f"🔹 Support available 24/7 {SUPPORT_USER}\n\n"
         f"🔹 1 Transaction per wallet unless payment is underpaid.\n\n"
         f"🔹 Payment BTC ONLY\n\n"
@@ -270,7 +271,12 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     if data == "main_menu":
         await query.edit_message_text(
-            f"Welcome to EXCEL Store 👋\nManaged by {ADMIN_USERNAME}",
+            f"Welcome to EXCEL Store 👋\nUse the menu below to interact with the bot 🤖\n\n"
+            f"======================\nManaged by {ADMIN_USERNAME}\n\n"
+            f"🔹 Support available 24/7 {SUPPORT_USER}\n\n"
+            f"🔹 1 Transaction per wallet unless payment is underpaid.\n\n"
+            f"🔹 Payment BTC ONLY\n\n"
+            f"🔹 BY PURCHASING YOU AGREE TO THESE RULES. WE SHALL GIVE NO WARNINGS",
             reply_markup=main_menu_kb()
         )
 
@@ -589,4 +595,6 @@ def main():
     app.run_polling()
 
 if __name__ == "__main__":
-    main() 
+    main()
+
+```
