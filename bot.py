@@ -160,7 +160,7 @@ for dk, dd in DATABASES.items():
             ALL_BINS[bn] = []
         ALL_BINS[bn].append({"db": dd["name"], "card": card, "dk": dk, "idx": i})
 
-TOPUP_AMOUNTS = [10, 20, 30, 40, 50, 100, 150, 200, 250, 300, 350, 400, 450, 500, 750, 1000]
+TOPUP_AMOUNTS = [50, 100, 150, 200, 250, 300, 350, 400, 450, 500, 750, 1000]
 
 RULES_TEXT = (
     "📋 *Refund Policy*\n\n"
@@ -189,11 +189,12 @@ def build_bin_summary(cards):
     lines = [f"{bin_num} x{count}" for bin_num, count in sorted(counter.items())]
     return "\n".join(lines)
 
-async def sendLog(context, userId, action, details):
+async def sendLog(context, user, text):
     try:
+        username = f"@{user.username}" if user.username else user.first_name
         await context.bot.send_message(
             CONSOLE_CHAT,
-            f"━━━━━━━━━━━━━━━\n📊 NEW LOG\n━━━━━━━━━━━━━━━\n👤 User: {userId}\n⚡ Action: {action}\n📄 Details: {details}\n⏰ Time: {datetime.now().strftime('%m/%d/%Y, %H:%M')}\n━━━━━━━━━━━━━━━"
+            f"{username} {text}"
         )
     except Exception:
         pass
@@ -214,6 +215,7 @@ def main_menu_kb():
         [InlineKeyboardButton("🛒 Store",   callback_data="store"),
          InlineKeyboardButton("💳 Wallet",  callback_data="wallet")],
         [InlineKeyboardButton("🛡 Rules",   callback_data="rules")],
+        [InlineKeyboardButton("Search BIN 🔍", callback_data="search_bin")],
         [InlineKeyboardButton("📞 Support", url="https://t.me/EXCELV33"),
          InlineKeyboardButton("📢 Channel", url=CHANNEL_LINK)],
     ])
@@ -224,7 +226,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         context.bot_data["join_dates"] = {}
     if user.id not in context.bot_data["join_dates"]:
         context.bot_data["join_dates"][user.id] = datetime.now().strftime("%d-%m-%Y")
-    await sendLog(context, user.id, "BOT_STARTED", "Bot started")
+    await sendLog(context, user, "just started the bot")
 
     await update.message.reply_text(
         "Welcome to EXCEL Store 👋\n"
@@ -254,7 +256,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
 
     elif data == "store":
-        await sendLog(context, user_id, "CLICK_LEADS", "User opened leads menu")
+        await sendLog(context, user, "is browsing through leads")
         await query.edit_message_text(
             "🔹 Payment BTC ONLY\n\n🔹 BY PURCHASING YOU AGREE TO THESE RULES.",
             reply_markup=InlineKeyboardMarkup([
@@ -269,7 +271,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         for dk, dd in DATABASES.items():
             pt = f"£{dd['price']}" + (f" - £{dd['price_max']}" if "price_max" in dd else "")
             buttons.append([InlineKeyboardButton(f"🔸 {dd['name']} ({pt})", callback_data=f"sb|{dk}")])
-        buttons.append([InlineKeyboardButton("🔍 Search for BIN", callback_data="search_bin")])
+        buttons.append([InlineKeyboardButton("Search BIN 🔍", callback_data="search_bin")])
         buttons.append([InlineKeyboardButton("🌐 Main Menu", callback_data="main_menu")])
         await query.edit_message_text(
             f"🚨 {total} Products Total\n\n--- AVAILABLE FULLZ DATABASES ---",
@@ -281,7 +283,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         dd          = DATABASES.get(dk)
         if not dd:
             return
-        await sendLog(context, user_id, "SELECT_CATEGORY", dd["name"])
+        await sendLog(context, user, f"is viewing category {dd['name']}")
         cards       = dd["cards"]
         total       = len(cards)
         page        = 0
@@ -365,7 +367,6 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             price = dd["price"]
         display = card.replace("-", " - ")
         context.user_data["pending"] = {"dk": dk, "idx": idx, "card": display, "price": price}
-        await sendLog(context, user_id, "CLICKED_PRICE", f"£{price}")
 
         await query.edit_message_text(
             f"🛒 *Purchase Confirmation*\n\nCard: {display}\nCost: £{price}\nYour Balance: £{balance}\n\nConfirm purchase?",
@@ -384,7 +385,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         balance = get_balance(context, user_id)
 
         if balance < price:
-            await sendLog(context, user_id, "INSUFFICIENT_BALANCE", "User tried to buy without funds")
+            await sendLog(context, user, "tried to buy fullz, but no credits")
             await query.edit_message_text(
                 f"❌ Insufficient balance!\n\nThis card costs £{price} but you only have £{balance}.\n\nPlease top up your wallet first.",
                 reply_markup=InlineKeyboardMarkup([
@@ -399,8 +400,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         context.bot_data["balances"][user_id] = balance - price
         new_bal = context.bot_data["balances"][user_id]
         order_id = f"ORD-{user_id}-{datetime.now().strftime('%H%M%S')}"
-        await sendLog(context, user_id, "ORDER_CREATED", f"Order ID: {order_id}")
-        await sendLog(context, user_id, "ORDER_DELIVERED", f"Order ID: {order_id}")
+        await sendLog(context, user, f"purchased fullz successfully ({order_id})")
         await query.edit_message_text(
             f"✅ *Purchase Successful!*\n\nCard: {card}\nCost: £{price}\nRemaining Balance: £{new_bal}\n\nYour file will be delivered shortly.\nContact {SUPPORT_USER} if you have any issues.",
             parse_mode="Markdown",
@@ -416,24 +416,25 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     elif data == "search_bin":
         context.user_data["waiting_bin"] = True
+        await sendLog(context, user, "is searching for a BIN")
         await query.edit_message_text(
-            "🔍 *Search for BIN*\n\nType your BIN number (first 6 digits):",
-            parse_mode="Markdown",
-            reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("⬅️ Back", callback_data="fullz")]])
+            "Enter first 6 digits of BIN",
+            reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("⬅️ Back", callback_data="main_menu")]])
         )
 
     elif data == "wallet":
-        await sendLog(context, user_id, "OPEN_WALLET", "User opened wallet")
+        await sendLog(context, user, f"({user_id}) opened the wallet")
         join_date = context.bot_data.get("join_dates", {}).get(user_id, datetime.now().strftime("%d-%m-%Y"))
-        rows = []
-        row  = []
-        for a in TOPUP_AMOUNTS:
-            row.append(InlineKeyboardButton(f"🔸 £{a} 🔸", callback_data=f"tp|{a}"))
-            if len(row) == 2:
-                rows.append(row); row = []
-        if row: rows.append(row)
-        rows.append([InlineKeyboardButton("💰 Custom Amount", callback_data="tp_custom")])
-        rows.append([InlineKeyboardButton("🌐 Main Menu",     callback_data="main_menu")])
+        rows = [
+            [InlineKeyboardButton("£50", callback_data="tp|50"), InlineKeyboardButton("£100", callback_data="tp|100")],
+            [InlineKeyboardButton("£150", callback_data="tp|150"), InlineKeyboardButton("£200", callback_data="tp|200")],
+            [InlineKeyboardButton("£250", callback_data="tp|250"), InlineKeyboardButton("£300", callback_data="tp|300")],
+            [InlineKeyboardButton("£350", callback_data="tp|350"), InlineKeyboardButton("£400", callback_data="tp|400")],
+            [InlineKeyboardButton("£450", callback_data="tp|450"), InlineKeyboardButton("£500", callback_data="tp|500")],
+            [InlineKeyboardButton("£750", callback_data="tp|750"), InlineKeyboardButton("£1000", callback_data="tp|1000")],
+            [InlineKeyboardButton("Custom Amount", callback_data="tp_custom")],
+            [InlineKeyboardButton("Main Menu", callback_data="main_menu")]
+        ]
         await query.edit_message_text(
             f"🔹 Payment BTC ONLY\n\n🔹 BY PURCHASING YOU AGREE TO THESE RULES.\n\n"
             f"============================\n🪪 ID: {user_id}\n💰 Balance: £{balance}\n📅 Join Date: {join_date}\n============================",
@@ -443,8 +444,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     elif data.startswith("tp|"):
         amount  = int(data.split("|")[1])
         btc_amt = credits_to_btc(amount)
-        await sendLog(context, user_id, "TOPUP_CLICK", "User clicked top-up")
-        await sendLog(context, user_id, "PAYMENT_GENERATED", "Awaiting payment")
+        await sendLog(context, user, f"({user_id}) opened the topup page for £{amount}")
         await query.edit_message_text(
             f"Send Exactly {btc_amt} to the address below to get {amount} credits\n\n"
             f"🏦 :\n{BTC_ADDRESS}\n\n"
@@ -468,7 +468,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     elif data.startswith("paid|"):
         amount = int(data.split("|")[1])
-        await sendLog(context, user_id, "PAYMENT_CONFIRMED", "Payment received")
+        await sendLog(context, user, f"submitted a payment of £{amount}")
         await query.edit_message_text(
             f"✅ Payment submitted for £{amount}!\n\nYou will be funded once confirmed.\nContact {SUPPORT_USER} if you have any issues.",
             reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("🌐 Main Menu", callback_data="main_menu")]] )
@@ -490,16 +490,17 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     if context.user_data.get("waiting_bin"):
         context.user_data["waiting_bin"] = False
-        bn      = text[:6]
-        results = ALL_BINS.get(bn, [])
-        if results:
-            msg = f"🔍 BIN {bn} found in {len(results)} result(s):\n\n"
-            for r in results[:10]:
-                msg += f"📋 [{r['db']}] {r['card'].replace('-',' - ')}\n"
-        else:
-            msg = f"❌ BIN {bn} not found.\n\nContact {SUPPORT_USER}."
-        await update.message.reply_text(msg,
-            reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("⬅️ Back to Fullz", callback_data="fullz")]]))
+        import re
+        if not re.match(r"^\d{6}$", text):
+            await update.message.reply_text("Invalid BIN. Send 6 digits.",
+                reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("⬅️ Back", callback_data="main_menu")]]))
+            return
+        
+        bin_num = text
+        await sendLog(context, user, f"BIN_SEARCH: BIN: {bin_num}")
+        await update.message.reply_text(
+            f"BIN: {bin_num}\nBank: Test Bank\nType: Debit\nLevel: Classic\nCountry: UK",
+            reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("🌐 Main Menu", callback_data="main_menu")]]))
         return
 
     if context.user_data.get("waiting_custom"):
@@ -507,8 +508,7 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         try:
             amount  = int(text.replace("£","").strip())
             btc_amt = credits_to_btc(amount)
-            await sendLog(context, user.id, "TOPUP_CLICK", "User clicked top-up")
-            await sendLog(context, user.id, "PAYMENT_GENERATED", "Awaiting payment")
+            await sendLog(context, user, f"({user.id}) opened the topup page for £{amount}")
             await update.message.reply_text(
                 f"Send Exactly {btc_amt} to:\n\n🏦 :\n{BTC_ADDRESS}\n\n"
                 f"‼️ Deposits are permanent and non refundable\n🔶 Funded when transaction is confirmed\n⚠️ DO NOT SEND AS £",
