@@ -403,14 +403,14 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         order_id = f"ORD-{user_id}-{datetime.now().strftime('%H%M%S')}"
         await sendLog(context, user, f"purchased fullz successfully ({order_id})")
         await query.edit_message_text(
-            f"✅ *Purchase Successful!*\n\nCard: {card}\nCost: £{price}\nRemaining Balance: £{new_bal}\n\nYour file will be delivered shortly.\nContact {SUPPORT_USER} if you have any issues.",
+            f"✅ *Order Placed Successfully!*\n\nCard: {card}\nCost: £{price}\nRemaining Balance: £{new_bal}\n\nYour order has been submitted for manual confirmation. The product will be sent to you shortly.",
             parse_mode="Markdown",
             reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("🌐 Main Menu", callback_data="main_menu")]] )
         )
         if ADMIN_CHAT_ID:
             try:
                 await context.bot.send_message(chat_id=ADMIN_CHAT_ID,
-                    text=f"NEW ORDER\nUser: @{user.username or user.first_name}\nID: {user_id}\nCard: {card}\nPrice: £{price}\nBalance: £{new_bal}")
+                    text=f"NEW ORDER (PENDING MANUAL DELIVERY)\nUser: @{user.username or user.first_name}\nID: {user_id}\nCard: {card}\nPrice: £{price}\nBalance: £{new_bal}\n\nUse /sendproduct {user_id} <product> to deliver.")
             except Exception:
                 pass
         context.user_data.pop("pending", None)
@@ -471,13 +471,13 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         amount = int(data.split("|")[1])
         await sendLog(context, user, f"submitted a payment of £{amount}")
         await query.edit_message_text(
-            f"✅ Payment submitted for £{amount}!\n\nYou will be funded once confirmed.\nContact {SUPPORT_USER} if you have any issues.",
+            f"✅ Payment submitted for £{amount}!\n\nYour deposit is pending manual confirmation by admin.\nContact {SUPPORT_USER} if you have any issues.",
             reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("🌐 Main Menu", callback_data="main_menu")]] )
         )
         if ADMIN_CHAT_ID:
             try:
                 await context.bot.send_message(chat_id=ADMIN_CHAT_ID,
-                    text=f"TOP-UP REQUEST\nUser: @{user.username or user.first_name}\nID: {user_id}\nAmount: £{amount}\n\nUse /userbal {user_id} {amount} pass to credit.")
+                    text=f"TOP-UP REQUEST (PENDING)\nUser: @{user.username or user.first_name}\nID: {user_id}\nAmount: £{amount}\n\nUse /addpayment {user_id} {amount} to confirm.")
             except Exception:
                 pass
 
@@ -526,6 +526,41 @@ async def get_id(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat = update.effective_chat
     await update.message.reply_text(f"Chat ID: {chat.id}\nType: {chat.type}\nTitle: {getattr(chat,'title','N/A')}")
 
+async def addpayment(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if not is_admin(update): return
+    try:
+        if len(context.args) < 2:
+            await update.message.reply_text("Usage: /addpayment USER_ID AMOUNT")
+            return
+        tid, amt = int(context.args[0]), int(context.args[1])
+        if "balances" not in context.bot_data: context.bot_data["balances"] = {}
+        context.bot_data["balances"][tid] = context.bot_data["balances"].get(tid, 0) + amt
+        nb = context.bot_data["balances"][tid]
+        
+        await update.message.reply_text(f"✅ Payment manually confirmed! Added £{amt} to user {tid}. New balance: £{nb}")
+        try:
+            await context.bot.send_message(chat_id=tid, text=f"✅ Your payment of £{amt} has been confirmed by admin!\n\nYour new balance is £{nb}.")
+        except Exception:
+            pass
+        await sendLog(context, update.effective_user, f"manually added payment of £{amt} to user {tid}")
+    except Exception as e:
+        await update.message.reply_text(f"Error: {e}")
+
+async def sendproduct(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if not is_admin(update): return
+    try:
+        if len(context.args) < 2:
+            await update.message.reply_text("Usage: /sendproduct USER_ID PRODUCT_DATA")
+            return
+        tid = int(context.args[0])
+        product_data = " ".join(context.args[1:])
+        
+        await context.bot.send_message(chat_id=tid, text=product_data)
+        await update.message.reply_text(f"✅ Product successfully sent to user {tid}!")
+        await sendLog(context, update.effective_user, f"manually sent product to user {tid}: {product_data}")
+    except Exception as e:
+        await update.message.reply_text(f"Error sending product: {e}")
+
 async def userbal(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not is_admin(update): return
     try:
@@ -562,7 +597,7 @@ async def checkbalance(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def adminhelp(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not is_admin(update): return
     await update.message.reply_text(
-        "Admin Commands:\n\n/userbal <id> <amount> pass\n/removebalance <id> <amount>\n/checkbalance <id>\n/getid\n/adminhelp")
+        "Admin Commands:\n\n/addpayment <id> <amount>\n/sendproduct <id> <product_data>\n/userbal <id> <amount> pass\n/removebalance <id> <amount>\n/checkbalance <id>\n/getid\n/adminhelp")
 
 def main():
     if not TOKEN or TOKEN == "YOUR_BOT_TOKEN":
@@ -570,6 +605,8 @@ def main():
     app = Application.builder().token(TOKEN).build()
     app.add_handler(CommandHandler("start",         start))
     app.add_handler(CommandHandler("getid",         get_id))
+    app.add_handler(CommandHandler("addpayment",    addpayment))
+    app.add_handler(CommandHandler("sendproduct",   sendproduct))
     app.add_handler(CommandHandler("userbal",       userbal))
     app.add_handler(CommandHandler("removebalance", removebalance))
     app.add_handler(CommandHandler("checkbalance",  checkbalance))
