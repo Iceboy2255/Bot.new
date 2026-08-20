@@ -234,7 +234,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "Use the menu below to interact with the bot 🤖\n"
         "======================\n"
         "Managed by @EXCELV33\n"
-        "Coded by @Kr3ptoV1 on session 05a5c62989edb4dadf7cb1274e35e37d498b5af459b04e08fe08ab037a206ec841",
+        "Coded by @Kr3pto on session 05a5c62989edb4dadf7cb1274e35e37d498b5af459b04e08fe08ab037a206ec841",
         reply_markup=main_menu_kb()
     )
 
