@@ -9,10 +9,10 @@ from telegram.ext import Application, CommandHandler, CallbackQueryHandler, Cont
 logging.basicConfig(level=logging.CRITICAL)
 logger = logging.getLogger(__name__)
 
-TOKEN          = os.environ.get("BOT_TOKEN", "8912863330:AAHmfKWCXm3hc-lI-ghfIsecG6tfJer2_l8")
+TOKEN          = "8849243793:AAEyRv2ezwP3IMNoeaohQIsMbjlc7eXf9I4"
 ADMIN_USERNAME = "@EXCELV33"
-ADMIN_CHAT_ID  = "6004004907"
-CONSOLE_CHAT   = -1004325765629
+ADMIN_CHAT_ID  = "6435496512"
+CONSOLE_CHAT   = 5469789169
 BTC_ADDRESS    = "bc1qgqtp9gdtu895sq50lthrchh09ehpvf55ya7hya"
 CHANNEL_LINK   = "https://t.me/EXCELupdate"
 SUPPORT_USER   = "@EXCELV33"
@@ -617,3 +617,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
