@@ -14,8 +14,8 @@ ADMIN_USERNAME = "@EXCELV33"
 ADMIN_CHAT_ID  = "6435496512"
 CONSOLE_CHAT   = 5469789169
 BTC_ADDRESS    = "bc1qgqtp9gdtu895sq50lthrchh09ehpvf55ya7hya"
-CHANNEL_LINK   = "https://t.me/EXCELupdate"
-SUPPORT_USER   = "@EXCELV33"
+CHANNEL_LINK   = "https://t.me/ExceLHQ"
+SUPPORT_USER   = "@ExcelLiveChats"
 ITEMS_PER_PAGE = 14
 
 DATABASES = {
