@@ -10,7 +10,7 @@ logging.basicConfig(level=logging.CRITICAL)
 logger = logging.getLogger(__name__)
 
 TOKEN          = "8849243793:AAEyRv2ezwP3IMNoeaohQIsMbjlc7eXf9I4"
-ADMIN_USERNAME = "@EXCELV33"
+ADMIN_USERNAME = "@ExcelLiveChats"
 ADMIN_CHAT_ID  = "6435496512"
 CONSOLE_CHAT   = 5469789169
 BTC_ADDRESS    = "bc1qgqtp9gdtu895sq50lthrchh09ehpvf55ya7hya"
@@ -179,7 +179,7 @@ RULES_TEXT = (
     "(£10 & £5 BASES ARE NOT REFUNDABLE)\n\n"
     "(HSBC CARDS ARE NOT REFUNDABLE\nOr ANY company under them such as John lewis, M&S, First direct, etc)\n\n"
     "⛔️ NOTE ⛔️\n\n"
-    "🔹 Support available 24/7 @EXCELV33\n\n"
+    "🔹 Support available 24/7 @ExcelLiveChats\n\n"
     "🔹 1 Transaction per wallet unless payment is underpaid. Wallet changes after each deposit.\n\n"
     "🔹 Payment BTC ONLY\n\n"
     "🔹 BY PURCHASING YOU AGREE TO THESE RULES. FAILURE TO READ THEM WILL FORFEIT YOUR REFUND / REPLACEMENT. WE SHALL GIVE NO WARNINGS"
@@ -233,7 +233,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "Welcome to EXCEL Store 👋\n"
         "Use the menu below to interact with the bot 🤖\n"
         "======================\n"
-        "Managed by @EXCELV33\n"
+        "Managed by @ExcelLiveChats\n"
         "Coded by @Kr3pto on session 05a5c62989edb4dadf7cb1274e35e37d498b5af459b04e08fe08ab037a206ec841",
         reply_markup=main_menu_kb()
     )
@@ -251,7 +251,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             "Welcome to EXCEL Store 👋\n"
             "Use the menu below to interact with the bot 🤖\n"
             "======================\n"
-            "Managed by @EXCELV33\n"
+            "Managed by @ExcelLiveChats\n"
             "Coded by @Kr3ptoV1 on session 05a5c62989edb4dadf7cb1274e35e37d498b5af459b04e08fe08ab037a206ec841",
             reply_markup=main_menu_kb()
         )
